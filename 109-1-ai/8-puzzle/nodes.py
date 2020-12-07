@@ -21,7 +21,7 @@ class Node:
         self.cost = cost
     
 
-    def getNeighbors(self):
+    def get_neighbors(self):
         return [_ for _ in self.parent.children if _ != self]
 
     
@@ -30,10 +30,11 @@ class Node:
         return self
     
 
-    def __lt__(self, other):
-        if(self.score == other.score):
-            return self.action < other.action
-        else:
-            return self.score < other.score
+    def __eq__(self, other):
+        return other.state.get_hash() == self.state.get_hash()
+
+
+    def __str__(self):
+        return self.state.get_hash()
 
 

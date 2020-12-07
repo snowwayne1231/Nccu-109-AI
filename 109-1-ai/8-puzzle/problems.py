@@ -12,6 +12,7 @@ class BasicProblem():
 
     state_start = None
     state_goal = None
+    state_hash_map = {}
 
     def __init__(self, start, goal):
         self.state_start = start
@@ -50,6 +51,18 @@ class EightPuzzleProblem(BasicProblem):
             return self.getStateWithMoveXY(state=state, moveX=_param[0], moveY=_param[1])
         else:
             return None
+
+
+    def get_actions_without_opposite(self, action_key):
+        _opposite_key = {
+            'UP': 'DOWN',
+            'DOWN': 'UP',
+            'LEFT': 'RIGHT',
+            'RIGHT': 'LEFT',
+        }
+        _fixed = _opposite_key.get(action_key)
+        return {k: self.ACTIONS[k] for k in self.ACTIONS if k != _fixed} 
+
         
     
     @staticmethod

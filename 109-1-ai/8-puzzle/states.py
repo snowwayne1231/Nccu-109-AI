@@ -23,6 +23,7 @@ class UniqueNumberSquareState(BasicState):
     square = None
     x_shape = 0
     y_shape = 0
+    chash = ''
 
     def __init__(self, square_list = None, square_num = 0, square = None):
         if square_list:
@@ -44,25 +45,30 @@ class UniqueNumberSquareState(BasicState):
     
 
     def get_location(self, label):
-        x = 0
         y = 0
+        
         while (y < self.y_shape):
+            x = 0
             _line = self.square[y]
-            if label in _line:
-                x = np.where(_line == label)[0]
-                return x, y
+            while x < self.x_shape:
+                _lab = _line[x]
+                if label == _lab:
+                    return x, y
+                x += 1
             y += 1
         return -1, -1
     
 
     def get_hash(self):
-        count = int(0)
-        sum = int(0)
-        _length = (self.x_shape*self.y_shape)
-        for i in self.square.flatten():
-            sum += i * math.pow(_length, count)
-            count += 1
-        return int(sum)
+        if not self.chash:
+            count = int(0)
+            sum = int(0)
+            _length = (self.x_shape*self.y_shape)
+            for i in self.square.flatten():
+                sum += i * math.pow(_length, count)
+                count += 1
+            self.chash = str(int(sum))
+        return self.chash
 
 
     def check_in_square(self, x, y):

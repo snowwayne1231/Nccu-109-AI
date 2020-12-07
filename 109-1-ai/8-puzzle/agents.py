@@ -1,7 +1,7 @@
 from states import UniqueNumberSquareState
 from problems import EightPuzzleProblem
-from enums import SearchModeEnum
-from searchs import IterativeDeepeningSearch
+from enums import SearchModeEnum, SearchStatus
+from searchs import IterativeDeepeningSearch, UniformCostSearch
 
 
 
@@ -39,7 +39,17 @@ class EightPuzzleSolvingAgent(BasicAgent):
 
     def search(self):
         _searched = self.model_search.search()
+        if _searched == SearchStatus.SOLUTION:
+            self.sequence = self.model_search.get_resolved_actions()
+            print('')
+            # print('Search Successful!  Action movement length: {}  node length: {}'.format(len(self.sequence), self.model_search.num_nodes))
+        else:
+            self.sequence = []
         return _searched
+
+
+    def get_result(self):
+        return self.sequence, self.model_search.num_nodes
 
 
     def check_status(self):
@@ -60,7 +70,7 @@ class EightPuzzleSolvingAgent(BasicAgent):
             self.model_search = IterativeDeepeningSearch(problem=self.problem)
 
         elif mode == SearchModeEnum.UCS:
-            pass
+            self.model_search = UniformCostSearch(problem=self.problem)
 
         elif mode == SearchModeEnum.GREEDY_BFS:
             pass
