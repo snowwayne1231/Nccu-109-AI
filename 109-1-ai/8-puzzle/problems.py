@@ -1,5 +1,6 @@
 from enums import SearchEightPuzzleDirection
 from states import UniqueNumberSquareState
+import math
 
 
 class BasicProblem():
@@ -12,7 +13,6 @@ class BasicProblem():
 
     state_start = None
     state_goal = None
-    state_hash_map = {}
 
     def __init__(self, start, goal):
         self.state_start = start
@@ -41,6 +41,7 @@ class EightPuzzleProblem(BasicProblem):
         'RIGHT': SearchEightPuzzleDirection.RIGHT,
     }
 
+    goal_flatten_list = []
 
     def get_next_state_by_action(self, action, state = None):
         if state is None:
@@ -62,6 +63,28 @@ class EightPuzzleProblem(BasicProblem):
         }
         _fixed = _opposite_key.get(action_key)
         return {k: self.ACTIONS[k] for k in self.ACTIONS if k != _fixed} 
+
+
+    def get_heuristic(self, state):
+        if len(self.goal_flatten_list) == 0:
+            x_shape = self.state_goal.x_shape
+            _list = self.state_goal.square.flatten('C')
+            for idx, label in enumerate(_list):
+                self.goal_flatten_list.append({
+                    'x': idx % x_shape,
+                    'y': math.floor(idx/x_shape),
+                    'label': label,
+                })
+            
+        for _ in self.goal_flatten_list:
+            _x = _['x']
+            _y = _['y']
+            _label = _['label']
+            ta_x, ta_y = state.get_location(_label)
+            diff = abs(ta_x - _x) + abs(ta_y - _y)
+
+
+        
 
         
     
@@ -86,6 +109,8 @@ class EightPuzzleProblem(BasicProblem):
             return next_state.switch_zero(zero_position=(zero_x, zero_y), next_position=(next_x, next_y))
         else:
             return None
+
+
     
 
 

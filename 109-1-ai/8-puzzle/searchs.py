@@ -255,7 +255,10 @@ class GreedyBestFirstSearch(BasicSearch):
                     break
                 
                 self.add_explored(node)
+
+                
                 for _child_node in self.expand_node(node, filter_by_explored=True):
+                    self.problem.get_heuristic(_child_node)
                     _index = self.get_index_in_frontier(_child_node)
                     if _index >= 0:
                         if self.frontier[_index].cost > _child_node.cost:

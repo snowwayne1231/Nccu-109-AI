@@ -29,7 +29,9 @@ def main():
 
     # agent = EightPuzzleSolvingAgent(goal=state_goal, state=state_start, search_mode=SearchModeEnum.IDS)
 
-    agent = EightPuzzleSolvingAgent(goal=state_goal, state=state_start, search_mode=SearchModeEnum.UCS)
+    # agent = EightPuzzleSolvingAgent(goal=state_goal, state=state_start, search_mode=SearchModeEnum.UCS)
+
+    agent = EightPuzzleSolvingAgent(goal=state_goal, state=state_start, search_mode=SearchModeEnum.GREEDY_BFS)
 
 
     ans = agent.search()
