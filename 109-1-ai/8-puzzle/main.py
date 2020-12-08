@@ -28,16 +28,18 @@ def enter_input_mode():
         exit(2)
 
 
-def get_states_by_operation(operate = 1):
+def get_states_by_operation(operate = 1, random = False):
     if operate == 2:
+        if random:
+            start = UniqueNumberSquareState(square_num=16)
+        else:
+            start = UniqueNumberSquareState(square_list=[
+                [ 1,  2,  3,  4],
+                [12, 13,  0,  5],
+                [11, 15, 14,  7],
+                [10,  9,  6,  8],
+            ])
         
-        start = UniqueNumberSquareState(square_list=[
-            [ 1,  2,  3,  4],
-            [12, 13,  0,  5],
-            [11, 15, 14,  7],
-            [10,  9,  6,  8],
-        ])
-        start = UniqueNumberSquareState(square_num=16)
         goal = UniqueNumberSquareState(square_list=[
             [ 1,  2,  3,  4],
             [12, 13, 14,  5],
@@ -45,13 +47,16 @@ def get_states_by_operation(operate = 1):
             [10,  9,  8,  7],
         ])
     else:
-        # easier be solved square
-        # start = UniqueNumberSquareState(square_list=[
-        #     [8,3,5],
-        #     [4,1,6],
-        #     [2,7,0],
-        # ])
-        start = UniqueNumberSquareState(square_num=9)
+        if random:
+            start = UniqueNumberSquareState(square_num=9)
+        else:
+            # easier be solved square
+            start = UniqueNumberSquareState(square_list=[
+                [8,3,0],
+                [4,1,5],
+                [2,7,6],
+            ])
+        
         goal = UniqueNumberSquareState(square_list=[
             [1, 2, 3],
             [8, 0, 4],
@@ -62,13 +67,16 @@ def get_states_by_operation(operate = 1):
 
 def main(argv):
 
-    opts, args = getopt.getopt(argv,":v",["lv"])
+    opts, args = getopt.getopt(argv,":v:r",["lv"])
     level = 1
+    randon_state = False
     for opt, arg in opts:
         if opt == '-v':
             level = 2
+        elif opt == '-r':
+            randon_state = True
 
-    state_start, state_goal = get_states_by_operation(level)
+    state_start, state_goal = get_states_by_operation(level, random=randon_state)
 
     print('Start: ')
     print(state_start)
@@ -83,6 +91,7 @@ def main(argv):
     print('Ans: ', ans)
     actions, state_space = agent.get_result()
     print('Movements: {}   States: {}'.format(len(actions), state_space))
+    print('actions: ', actions)
     
 
 
