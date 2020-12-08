@@ -19,8 +19,12 @@ class BasicSearch():
     frontier = []
     explored = {}
 
+    timer_start = None
+    timer_times = 0
+
     def __init__(self, problem, node=None):
         self.problem = problem
+        self.timer_start = time.time()
         if node is None:
             self.node = Node(state=problem.get_initial())
         else:
@@ -64,15 +68,22 @@ class BasicSearch():
         return _actions
 
 
-    def add_frontier(self, node):
+    def add_frontier(self, node, order_by='cost'):
         _frontier = self.frontier
-        _i_frontier = len(_frontier)
-        while (_i_frontier>0):
-            _i_frontier -= 1
-            if node.cost >= _frontier[_i_frontier].cost:
-                _i_frontier += 1
+        idx = len(_frontier)
+
+        if order_by == 'cost':
+            _lambda = lambda a, b : a.cost >= b.cost
+        elif order_by == 'score':
+            _lambda = lambda a, b : a.score >= b.score
+        
+        while (idx>0):
+            idx -= 1
+            if _lambda(node, _frontier[idx]):
+                idx += 1
                 break
-        self.frontier.insert(_i_frontier, node)
+
+        self.frontier.insert(idx, node)
         return self
 
     
@@ -83,7 +94,7 @@ class BasicSearch():
             False
 
 
-    def replace_frontier(self, idx, node):
+    def replace_frontier(self, node, idx):
         self.frontier.pop(idx)
         self.add_frontier(node)
         self.num_nodes -= 1
@@ -111,6 +122,17 @@ class BasicSearch():
     def has_explored(self, hash):
         return self.explored.get(hash, False)
 
+
+    def time_print_fn(self, string = '', times = 0):
+        if self.timer_times <= 0 or times == 0:
+            _tt = time.time()
+            _spended_time = (_tt - self.timer_start) * 1000
+            _name = self.__class__.__name__
+            print('| {} | Searching... [{}]   [Spend: {:.2f}ms]'.format(_name, string, _spended_time), end='\r')
+            self.timer_times = times
+        else:
+            self.timer_times -= 1
+        return self
     
 
 
@@ -124,9 +146,7 @@ class IterativeDeepeningSearch(BasicSearch):
 
     def search(self):
         _depth = 0
-        self.node_goal = None
         while True:
-            _tt = time.time()
             _DLS = DepthLimitedSearch(problem=self.problem, limit=_depth, node=self.node)
             result = _DLS.search()
             self.num_nodes += _DLS.num_nodes
@@ -137,8 +157,7 @@ class IterativeDeepeningSearch(BasicSearch):
                 self.last_depth = _depth
                 return result
             _depth += 1
-            _tt_end = time.time()
-            print('IterativeDeepeningSearch Searching... [Depth: {}]   [Spend: {:.2f}ms]'.format(_depth, (_tt_end-_tt) * 1000), end='\r')
+            self.time_print_fn(string='Depth: {}'.format(_depth))
 
 
 
@@ -191,11 +210,7 @@ class UniformCostSearch(BasicSearch):
     """
     
     def search(self):
-        _depth = 0
-        self.node_goal = None
         self.add_frontier(self.node)
-        _tt = time.time()
-        _times = 0
 
         while True:
             
@@ -203,32 +218,22 @@ class UniformCostSearch(BasicSearch):
             if node:
                 if self.problem.test_goal(node.state):
                     self.node_goal = node
-                    break
+                    return self.STATUS_SOLUTED
                 
                 self.add_explored(node)
                 for _child_node in self.expand_node(node, filter_by_explored=True):
                     _index = self.get_index_in_frontier(_child_node)
                     if _index >= 0:
                         if self.frontier[_index].cost > _child_node.cost:
-                            self.replace_frontier(_index, _child_node)
+                            self.replace_frontier(_child_node, _index)
                     else:
                         self.add_frontier(_child_node)
             else:
                 break
 
-            if _times > 500:
-                # print([_.cost for _ in self.frontier])
-                # exit(2)
-                _times = 0
-                _tt_end = time.time()
-                print('UniformCostSearch Searching...  [Spend: {:.2f}ms]  [explored: {}]'.format((_tt_end-_tt) * 1000, len(self.explored)), end='\r')
+            self.time_print_fn(string='Explored: {}'.format(len(self.explored)), times=500)
 
-            _times += 1
-
-        if self.node_goal:
-            return self.STATUS_SOLUTED
-        else:
-            return self.STATUS_FAILURE
+        return self.STATUS_FAILURE
             
         
 
@@ -240,11 +245,7 @@ class GreedyBestFirstSearch(BasicSearch):
     """
     
     def search(self):
-        _depth = 0
-        self.node_goal = None
         self.add_frontier(self.node)
-        _tt = time.time()
-        _times = 0
 
         while True:
             
@@ -252,32 +253,107 @@ class GreedyBestFirstSearch(BasicSearch):
             if node:
                 if self.problem.test_goal(node.state):
                     self.node_goal = node
-                    break
+                    return self.STATUS_SOLUTED
                 
                 self.add_explored(node)
 
-                
                 for _child_node in self.expand_node(node, filter_by_explored=True):
-                    self.problem.get_heuristic(_child_node)
                     _index = self.get_index_in_frontier(_child_node)
-                    if _index >= 0:
-                        if self.frontier[_index].cost > _child_node.cost:
-                            self.replace_frontier(_index, _child_node)
-                    else:
-                        self.add_frontier(_child_node)
+                    if _index < 0:
+                        heuristic = self.problem.get_heuristic(_child_node.state)
+                        _child_node.score = heuristic
+                        self.add_frontier(_child_node, order_by='score')
             else:
                 break
 
-            if _times > 500:
-                # print([_.cost for _ in self.frontier])
-                # exit(2)
-                _times = 0
-                _tt_end = time.time()
-                print('UniformCostSearch Searching...  [Spend: {:.2f}ms]  [explored: {}]'.format((_tt_end-_tt) * 1000, len(self.explored)), end='\r')
+            self.time_print_fn(string='Explored: {}'.format(len(self.explored)), times=500)
 
-            _times += 1
+        return self.STATUS_FAILURE
 
-        if self.node_goal:
-            return self.STATUS_SOLUTED
-        else:
-            return self.STATUS_FAILURE
+
+
+
+class AStarSearch(BasicSearch):
+    """
+
+    """
+    
+    def search(self):
+        self.add_frontier(self.node)
+
+        while True:
+            
+            node = self.pop_frontier()
+            if node:
+                if self.problem.test_goal(node.state):
+                    self.node_goal = node
+                    return self.STATUS_SOLUTED
+                
+                self.add_explored(node)
+
+                for _child_node in self.expand_node(node, filter_by_explored=True):
+                    _index = self.get_index_in_frontier(_child_node)
+                    heuristic = self.problem.get_heuristic(_child_node.state)
+                    _child_node.score = heuristic + _child_node.cost
+
+                    if _index >= 0:
+                        if self.frontier[_index].score > _child_node.score:
+                            self.replace_frontier(_child_node, _index)
+                    else:
+                        self.add_frontier(_child_node)
+
+            else:
+                break
+
+            self.time_print_fn(string='Explored: {}'.format(len(self.explored)), times=500)
+
+        return self.STATUS_FAILURE
+
+
+
+
+
+class RecursiveBestFirstSearch(BasicSearch):
+    """
+
+    """
+
+    def search(self):
+        
+        result, limit = self.RBFS(self.node, float('inf'))
+        return result
+
+
+    def RBFS(self, node, f_limit):
+        if self.problem.test_goal(node.state):
+            self.node_goal = node
+            return self.STATUS_SOLUTED, f_limit
+
+        successors = self.expand_node(node)
+        if len(successors) == 0:
+            return self.STATUS_FAILURE, float('inf')
+        
+        for s in successors:
+            heuristic = self.problem.get_heuristic(s.state)
+            s.score = heuristic + s.cost
+            s.f = max(node.f, s.score)
+
+        while True:
+            successors.sort(key=lambda _: _.f)
+            best = successors[0]
+            if best.f > f_limit:
+                return self.STATUS_FAILURE, best.f
+
+            if len(successors) > 1:
+                min_f = min(f_limit, successors[1].f)
+            else:
+                min_f = f_limit
+
+            result, best.f = self.RBFS(best, min_f)
+            if result != self.STATUS_FAILURE:
+                return result, min_f
+
+            self.time_print_fn(string='F: {}'.format(min_f), times=500)
+
+        
+

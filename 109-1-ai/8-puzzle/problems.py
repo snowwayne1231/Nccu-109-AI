@@ -62,19 +62,26 @@ class EightPuzzleProblem(BasicProblem):
             'RIGHT': 'LEFT',
         }
         _fixed = _opposite_key.get(action_key)
-        return {k: self.ACTIONS[k] for k in self.ACTIONS if k != _fixed} 
+        return {k: self.ACTIONS[k] for k in self.ACTIONS if k != _fixed}
+
+
+    def init_goal_flatten_list(self):
+        self.goal_flatten_list = []
+        x_shape = self.state_goal.x_shape
+        _list = self.state_goal.square.flatten('C')
+        for idx, label in enumerate(_list):
+            self.goal_flatten_list.append({
+                'x': idx % x_shape,
+                'y': math.floor(idx/x_shape),
+                'label': label,
+            })
 
 
     def get_heuristic(self, state):
         if len(self.goal_flatten_list) == 0:
-            x_shape = self.state_goal.x_shape
-            _list = self.state_goal.square.flatten('C')
-            for idx, label in enumerate(_list):
-                self.goal_flatten_list.append({
-                    'x': idx % x_shape,
-                    'y': math.floor(idx/x_shape),
-                    'label': label,
-                })
+            self.init_goal_flatten_list()
+
+        total = 0
             
         for _ in self.goal_flatten_list:
             _x = _['x']
@@ -82,6 +89,9 @@ class EightPuzzleProblem(BasicProblem):
             _label = _['label']
             ta_x, ta_y = state.get_location(_label)
             diff = abs(ta_x - _x) + abs(ta_y - _y)
+            total += diff
+
+        return total
 
 
         

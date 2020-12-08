@@ -11,6 +11,7 @@ class Node:
     depth = 0
     score = 0
     cost = 0
+    f = 0
 
     def __init__(self, state, parent = None, action = '', depth:int = 0, score:float = 0, cost:float = 0):
         self.parent = parent

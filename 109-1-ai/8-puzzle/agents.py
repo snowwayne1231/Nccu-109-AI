@@ -1,7 +1,7 @@
 from states import UniqueNumberSquareState
 from problems import EightPuzzleProblem
 from enums import SearchModeEnum, SearchStatus
-from searchs import IterativeDeepeningSearch, UniformCostSearch, GreedyBestFirstSearch
+from searchs import IterativeDeepeningSearch, UniformCostSearch, GreedyBestFirstSearch, AStarSearch, RecursiveBestFirstSearch
 
 
 
@@ -76,9 +76,9 @@ class EightPuzzleSolvingAgent(BasicAgent):
             self.model_search = GreedyBestFirstSearch(problem=self.problem)
 
         elif mode == SearchModeEnum.A_STAR:
-            pass
+            self.model_search = AStarSearch(problem=self.problem)
 
         elif mode == SearchModeEnum.RECURSIVE_BFS:
-            pass
+            self.model_search = RecursiveBestFirstSearch(problem=self.problem)
 
         return self
