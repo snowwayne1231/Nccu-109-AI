@@ -42,6 +42,8 @@ class EightPuzzleProblem(BasicProblem):
     }
 
     goal_flatten_list = []
+    goal_zero_x = -1
+    goal_zero_y = -1
 
     def get_next_state_by_action(self, action, state = None):
         if state is None:
@@ -70,11 +72,16 @@ class EightPuzzleProblem(BasicProblem):
         x_shape = self.state_goal.x_shape
         _list = self.state_goal.square.flatten('C')
         for idx, label in enumerate(_list):
+            _x = idx % x_shape
+            _y = math.floor(idx/x_shape)
             self.goal_flatten_list.append({
-                'x': idx % x_shape,
-                'y': math.floor(idx/x_shape),
+                'x': _x,
+                'y': _y,
                 'label': label,
             })
+            if label == 0:
+                self.goal_zero_x = _x
+                self.goal_zero_y = _y
 
 
     def get_heuristic(self, state):
@@ -82,14 +89,43 @@ class EightPuzzleProblem(BasicProblem):
             self.init_goal_flatten_list()
 
         total = 0
+        goal_zero_x = self.goal_zero_x
+        goal_zero_y = self.goal_zero_y
             
-        for _ in self.goal_flatten_list:
-            _x = _['x']
-            _y = _['y']
-            _label = _['label']
-            ta_x, ta_y = state.get_location(_label)
-            diff = abs(ta_x - _x) + abs(ta_y - _y)
-            total += diff
+        for _goal in self.goal_flatten_list:
+            need_step = 0
+            _goal_x = _goal['x']
+            _goal_y = _goal['y']
+            _goal_label = _goal['label']
+
+            state_now_x, state_now_y = state.get_location(_goal_label)
+            distant_to_goal_x = abs(state_now_x - _goal_x)
+            distant_to_goal_y = abs(state_now_y - _goal_y)
+            distant_to_zero_x = abs(state_now_x - goal_zero_x)
+            distant_to_zero_y = abs(state_now_y - goal_zero_y)
+
+            distant_xy_to_goal = distant_to_goal_x + distant_to_goal_y
+            if distant_xy_to_goal == 0:
+                continue
+            
+            move_zero_to_now = distant_to_zero_x + distant_to_zero_y
+            need_step += move_zero_to_now
+
+            # evaluate the line move
+            if distant_to_goal_x <= 1 and distant_to_goal_y <= 1:
+                move_zero_to_goal = ((distant_xy_to_goal-1) * 2) +1
+                need_step += move_zero_to_goal
+
+            else:
+                if distant_to_goal_x == 0:
+                    move = (distant_to_goal_y -1)*5 +1
+                elif distant_to_goal_y == 0:
+                    move = (distant_to_goal_x -1)*5 +1
+                else:
+                    move = (distant_xy_to_goal *2) + 1
+                need_step += move
+
+            total += need_step
 
         return total
 

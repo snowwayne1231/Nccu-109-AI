@@ -30,6 +30,13 @@ def enter_input_mode():
 
 def get_states_by_operation(operate = 1):
     if operate == 2:
+        
+        start = UniqueNumberSquareState(square_list=[
+            [ 1,  2,  3,  4],
+            [12, 13,  0,  5],
+            [11, 15, 14,  7],
+            [10,  9,  6,  8],
+        ])
         start = UniqueNumberSquareState(square_num=16)
         goal = UniqueNumberSquareState(square_list=[
             [ 1,  2,  3,  4],
@@ -39,7 +46,7 @@ def get_states_by_operation(operate = 1):
         ])
     else:
         # easier be solved square
-        # state_start = UniqueNumberSquareState(square_list=[
+        # start = UniqueNumberSquareState(square_list=[
         #     [8,3,5],
         #     [4,1,6],
         #     [2,7,0],
@@ -74,8 +81,8 @@ def main(argv):
 
     ans = agent.search()
     print('Ans: ', ans)
-    result = agent.get_result()
-    print('Movements: {}   States: {}'.format(len(result[0]), result[1]))
+    actions, state_space = agent.get_result()
+    print('Movements: {}   States: {}'.format(len(actions), state_space))
     
 
 
@@ -84,11 +91,11 @@ if __name__ == "__main__":
     
     try:
 
-        print('-----Start-----')
+        print('---------------Start---------------')
 
         main(sys.argv[1:])
 
-        print('----- END -----')
+        print('--------------- END ---------------')
 
     except KeyboardInterrupt:
 
