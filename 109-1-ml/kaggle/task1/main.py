@@ -20,6 +20,8 @@ test_dataset = dataset.drop(train_dataset.index)
 print('train_dataset: ', train_dataset)
 print('train_dataset.index: ', train_dataset.index)
 
+
+
 class LinearRegresionModel():
     """
     """
@@ -28,9 +30,23 @@ class LinearRegresionModel():
     model = None
 
     def __init__(self, train_dataset, test_dataset):
-        self.train = train_dataset
-        self.test = test_dataset
+        self.train = train_dataset.to_numpy()
+        self.test = test_dataset.to_numpy()
+        self.build_model()
 
 
     def build_model(self):
-        pass
+        length = len(self.train[0])
+        # print('length: ', length)
+        
+        horsepower_normalizer = preprocessing.Normalization(input_shape=[length,])
+        horsepower_model = tf.keras.Sequential([
+            horsepower_normalizer,
+            layers.Dense(units=1)
+        ])
+
+        horsepower_model.summary()
+
+
+
+LRM = LinearRegresionModel(train_dataset=train_dataset, test_dataset=test_dataset)
