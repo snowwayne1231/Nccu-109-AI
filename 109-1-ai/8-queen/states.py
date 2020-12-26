@@ -1,0 +1,135 @@
+import math, random 
+import numpy as np
+
+
+
+class BasicState():
+    
+    name = ''
+
+    def __str__(self):
+        return self.name
+
+    def __eq__(self, other):
+        if(other == None):
+            return False
+        return self.name == other.name
+
+
+class BinaraySquareState(BasicState):
+    """
+        0 或 1 的方形矩陣
+    """
+    square = None
+    x_shape = 0
+    y_shape = 0
+    chash = ""
+
+    def __init__(self, width=0, height=0, num_queen=1, square=None):
+        if width > 0 and height > 0:
+            self.square = np.zeros((width, height), dtype=int)
+            random_y = random.randint(0, height-1)
+            random_x = random.randint(0, width-1)
+            self.square[random_y][random_x] = 1
+        elif square:
+            self.square = np.copy(square)
+
+
+
+    
+    @classmethod
+    def clone(cls, status):
+        return cls(square=status.square)
+
+
+    def __str__(self):
+        return (self.square.__str__())
+    
+
+    def __eq__(self, other):
+        if(other == None):
+            return False
+        return np.array_equal(self.square, other.square)
+
+
+
+
+
+class UniqueNumberSquareState(BasicState):
+    """
+        唯一正整數正方形矩陣
+    """
+    square = None
+    x_shape = 0
+    y_shape = 0
+    chash = ''
+
+    def __init__(self, square_list = None, square_num = 0, square = None):
+        if square_list:
+            self.square = np.array(square_list)
+        elif square_num:
+            _sq = round(math.sqrt(square_num))
+            _square = np.arange(square_num)
+            np.random.shuffle(_square)
+            self.square = _square.reshape((_sq, _sq))
+        elif isinstance(square, np.ndarray):
+            self.square = np.copy(square)
+        else:
+            self.square = np.array([])
+        
+        _shape = self.square.shape
+        
+        self.y_shape = int(_shape[0])
+        self.x_shape = int(_shape[1])
+    
+
+    def get_location(self, label):
+        y = 0
+        
+        while (y < self.y_shape):
+            x = 0
+            _line = self.square[y]
+            while x < self.x_shape:
+                _lab = _line[x]
+                if label == _lab:
+                    return x, y
+                x += 1
+            y += 1
+        return -1, -1
+    
+
+    def get_hash(self):
+        if not self.chash:
+            count = int(0)
+            sum = int(0)
+            _length = (self.x_shape*self.y_shape)
+            for i in self.square.flatten():
+                sum += i * math.pow(_length, count)
+                count += 1
+            self.chash = str(int(sum))
+        return self.chash
+
+
+    def check_in_square(self, x, y):
+        return x >= 0 and y >= 0 and x < self.x_shape and y < self.y_shape
+
+    
+    def switch_zero(self, zero_position, next_position):
+        self.square[zero_position[1], zero_position[0]] = self.square[next_position[1], next_position[0]]
+        self.square[next_position[1], next_position[0]] = 0
+        return self
+
+
+    @classmethod
+    def clone(cls, status):
+        return cls(square=status.square)
+    
+
+    def __str__(self):
+        return (self.square.__str__())
+    
+
+    def __eq__(self, other):
+        if(other == None):
+            return False
+        return np.array_equal(self.square, other.square)
