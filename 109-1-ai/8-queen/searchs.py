@@ -1,5 +1,4 @@
 from nodes import Node
-from problems import BasicProblem
 from enums import SearchStatus
 import math, time
 
@@ -34,22 +33,16 @@ class BasicSearch():
     def expand_node(self, node, filter_by_explored=False):
         _problem = self.problem
         node_children_list = []
-        if node.action:
-            _actions = _problem.get_actions_without_opposite(node.action)
-        else:
-            _actions = _problem.ACTIONS
-        
-        for _key in _actions:
-            _action_name = _actions[_key]
-            _state = _problem.get_next_state_by_action(action=_action_name, state=node.state)
 
-            if _state:
-                
-                if filter_by_explored and self.has_explored(_state.get_hash()):
-                    continue
-                
-                _new_node = Node(state=_state, parent=node, action=_key, depth=node.depth+1, cost=node.cost+1)
-                node_children_list.append(_new_node)
+        _next_empty_line = _problem.get_next_empty_line(state=node.state)
+
+        all_new_states = _problem.get_all_state_by_horizontal_line_with_prosible(line=_next_empty_line, state=node.state)
+
+        for state in all_new_states:
+            if filter_by_explored and self.has_explored(state.get_hash()):
+                continue
+            _new_node = Node(state=state, parent=node, action=state.last_queen_position, depth=node.depth+1, cost=node.cost+1)
+            node_children_list.append(_new_node)
 
         self.num_nodes += len(node_children_list)
         

@@ -1,5 +1,5 @@
 from agents import EightQueenSolvingAgent
-from states import BinaraySquareState
+from states import SquareState
 from enums import SearchModeEnum
 import sys, getopt
 
@@ -29,27 +29,27 @@ def enter_input_mode():
 
 
 def get_states_by_num_queen(num_queen = 8):
-    state = BinaraySquareState(width=num_queen, height=num_queen)
-    return state
+    return SquareState(width=num_queen, height=num_queen, max_queen=num_queen)
 
 
 def main(argv):
 
-    opts, args = getopt.getopt(argv,":v:r",["lv"])
+    opts, args = getopt.getopt(argv,":s",["size"])
     num_queen = 8
     for opt, arg in opts:
-        if opt == '-v':
-            num_queen = 15
+        if opt == '-s':
+            num_queen = int(args[0])
 
+    print('Queen Size: ', num_queen)
+
+    MODE = enter_input_mode()
+    # MODE = SearchModeEnum.IDS
     
-
     state_init = get_states_by_num_queen(num_queen=num_queen)
+    poisition_init = state_init.last_queen_position
 
     print('Start State: ')
     print(state_init)
-
-    # MODE = enter_input_mode()
-    MODE = SearchModeEnum.IDS
 
     agent = EightQueenSolvingAgent(state=state_init, search_mode=MODE)
 
@@ -57,7 +57,8 @@ def main(argv):
     print('Ans: ', ans)
     actions, state_space = agent.get_result()
     print('Movements: {}   States: {}'.format(len(actions), state_space))
-    print('actions: ', actions)
+    print('first position: ', poisition_init)
+    print('action positions: ', actions)
     
 
 

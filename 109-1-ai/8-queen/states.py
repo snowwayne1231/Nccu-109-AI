@@ -16,114 +16,112 @@ class BasicState():
         return self.name == other.name
 
 
-class BinaraySquareState(BasicState):
+class SquareState(BasicState):
     """
-        0 或 1 的方形矩陣
+        方形棋盤矩陣
     """
     square = None
     x_shape = 0
     y_shape = 0
-    chash = ""
+    now_queen = 0
+    max_queen = 0
+    last_queen_position = (0,0)
 
-    def __init__(self, width=0, height=0, num_queen=1, square=None):
+
+    def __init__(self, width=0, height=0, max_queen = 0, now_queen=0, square=None):
         if width > 0 and height > 0:
             self.square = np.zeros((width, height), dtype=int)
-            random_y = random.randint(0, height-1)
-            random_x = random.randint(0, width-1)
-            self.square[random_y][random_x] = 1
-        elif square:
+        elif square is not None:
             self.square = np.copy(square)
 
-
-
-    
-    @classmethod
-    def clone(cls, status):
-        return cls(square=status.square)
-
-
-    def __str__(self):
-        return (self.square.__str__())
-    
-
-    def __eq__(self, other):
-        if(other == None):
-            return False
-        return np.array_equal(self.square, other.square)
-
-
-
-
-
-class UniqueNumberSquareState(BasicState):
-    """
-        唯一正整數正方形矩陣
-    """
-    square = None
-    x_shape = 0
-    y_shape = 0
-    chash = ''
-
-    def __init__(self, square_list = None, square_num = 0, square = None):
-        if square_list:
-            self.square = np.array(square_list)
-        elif square_num:
-            _sq = round(math.sqrt(square_num))
-            _square = np.arange(square_num)
-            np.random.shuffle(_square)
-            self.square = _square.reshape((_sq, _sq))
-        elif isinstance(square, np.ndarray):
-            self.square = np.copy(square)
-        else:
-            self.square = np.array([])
-        
         _shape = self.square.shape
-        
         self.y_shape = int(_shape[0])
         self.x_shape = int(_shape[1])
-    
+        self.max_queen = max_queen
 
-    def get_location(self, label):
-        y = 0
+        if now_queen == 0:
+            random_y = random.randint(0, height-1)
+            random_x = random.randint(0, width-1)
+            self.put_queen(x=random_x, y=random_y)
+        else:
+            self.now_queen = now_queen
+
+
+    def check_no_conflict(self, x, y):
+        _i = 0
+        while (_i < self.y_shape):
+            if self.square[_i][x] == 1:
+                return False
+            _y_gap = abs(_i - y)
+            _left = x - _y_gap
+            _right = x + _y_gap
+            if _left >= 0 and self.square[_i][_left] == 1:
+                return False
+            if _right < self.x_shape and self.square[_i][_right] == 1:
+                return False
+            _i += 1
+
+        _i = 0
+        while (_i < self.x_shape):
+            if self.square[y][_i] == 1:
+                return False
+            _x_gap = abs(_i - x)
+            _top = y - _x_gap
+            _bottom = y + _x_gap
+            if _top >= 0 and self.square[_top][_i] == 1:
+                return False
+            if _bottom < self.y_shape and self.square[_bottom][_i] == 1:
+                return False
+            _i += 1
+
+        return True
+
+
+
+    def put_queen(self, x, y):
+        _move_y = 0
+        while (_move_y < self.y_shape):
+            _move_x = 0
+            _gap_y = abs(y - _move_y)
+            _is_horizontal = _gap_y == 0
+            while (_move_x < self.x_shape):
+                _gap_x = abs(x - _move_x)
+                _is_vertical = _gap_x == 0
+                _is_slope = _gap_y == _gap_x # 斜率1
+                if _is_horizontal or _is_vertical or _is_slope: 
+                    if self.square[_move_y][_move_x] == 1:
+                        return False
+                    self.square[_move_y][_move_x] = -1
+
+                _move_x += 1
+            _move_y += 1
         
-        while (y < self.y_shape):
-            x = 0
-            _line = self.square[y]
-            while x < self.x_shape:
-                _lab = _line[x]
-                if label == _lab:
-                    return x, y
-                x += 1
-            y += 1
-        return -1, -1
-    
+        self.square[y][x] = 1
+        self.now_queen += 1
+        self.last_queen_position = (y,x)
+
+        return True
+
 
     def get_hash(self):
-        if not self.chash:
-            count = int(0)
-            sum = int(0)
-            _length = (self.x_shape*self.y_shape)
-            for i in self.square.flatten():
-                sum += i * math.pow(_length, count)
-                count += 1
-            self.chash = str(int(sum))
-        return self.chash
-
-
-    def check_in_square(self, x, y):
-        return x >= 0 and y >= 0 and x < self.x_shape and y < self.y_shape
-
+        _list = []
+        _i = 0
+        while (_i < self.y_shape):
+            _x_line = self.square[_i]
+            _idx_x = 0
+            if 1 in _x_line:
+                _idx_x = list(_x_line).index(1) + 1
+            
+            _list.append(str(_idx_x))
+            _i += 1
+        return ''.join(_list)
     
-    def switch_zero(self, zero_position, next_position):
-        self.square[zero_position[1], zero_position[0]] = self.square[next_position[1], next_position[0]]
-        self.square[next_position[1], next_position[0]] = 0
-        return self
-
+    
 
     @classmethod
     def clone(cls, status):
-        return cls(square=status.square)
-    
+        return cls(square=status.square, max_queen=status.max_queen, now_queen=status.now_queen)
+
 
     def __str__(self):
         return (self.square.__str__())
@@ -133,3 +131,7 @@ class UniqueNumberSquareState(BasicState):
         if(other == None):
             return False
         return np.array_equal(self.square, other.square)
+
+
+
+
