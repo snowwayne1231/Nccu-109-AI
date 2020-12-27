@@ -49,6 +49,10 @@ class EightQueenSolvingAgent(BasicAgent):
     def get_result(self):
         return self.sequence, self.model_search.num_nodes
 
+    
+    def get_goal_node(self):
+        return self.model_search.node_goal
+
 
     def check_problem(self):
         if self.problem is None:

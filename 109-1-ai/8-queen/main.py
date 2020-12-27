@@ -49,16 +49,24 @@ def main(argv):
     poisition_init = state_init.last_queen_position
 
     print('Start State: ')
-    print(state_init)
+    print(state_init.queen_result())
 
     agent = EightQueenSolvingAgent(state=state_init, search_mode=MODE)
 
     ans = agent.search()
     print('Ans: ', ans)
+
+    goal_node = agent.get_goal_node()
+    if goal_node:
+        print("Goal State: ")
+        print(goal_node.state.queen_result())
+    
     actions, state_space = agent.get_result()
     print('Movements: {}   States: {}'.format(len(actions), state_space))
     print('first position: ', poisition_init)
     print('action positions: ', actions)
+
+    
     
 
 

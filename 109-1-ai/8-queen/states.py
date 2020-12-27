@@ -115,6 +115,15 @@ class SquareState(BasicState):
             _list.append(str(_idx_x))
             _i += 1
         return ''.join(_list)
+
+
+    def queen_result(self):
+        result = np.copy(self.square)
+        for _y_idx, _y in enumerate(result):
+            for _x_idx, _x in enumerate(_y):
+                if  _x == -1:
+                    result[_y_idx][_x_idx] = 0
+        return result
     
     
 
