@@ -49,7 +49,7 @@ def main(argv):
     poisition_init = state_init.last_queen_position
 
     print('Start State: ')
-    print(state_init.queen_result())
+    print(state_init)
 
     agent = EightQueenSolvingAgent(state=state_init, search_mode=MODE)
 

@@ -293,7 +293,7 @@ class AStarSearch(BasicSearch):
                         if self.frontier[_index].score > _child_node.score:
                             self.replace_frontier(_child_node, _index)
                     else:
-                        self.add_frontier(_child_node)
+                        self.add_frontier(_child_node, order_by='score')
 
             else:
                 break
