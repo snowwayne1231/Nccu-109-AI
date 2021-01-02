@@ -51,6 +51,12 @@ class TFModel():
 
 
     def build_model(self, debug=False):
+
+        def logistic_regression(x):
+    
+            # Apply softmax to normalize the logits to a probability distribution.
+
+            return tf.nn.softmax(tf.matmul(x, W) + b)
         
         if os.path.isfile(PATH_MODEL) and debug is False:
             _model = tf.keras.models.load_model(PATH_MODEL)
@@ -60,9 +66,12 @@ class TFModel():
                 layers.Dense(self.NUM_FEATURE * self.NUM_RESULT_CLASS, activation="relu"),
                 layers.Dense(self.NUM_RESULT_CLASS, activation='softmax'),
             ])
-            # mse  mean_absolute_error
-            # _model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), optimizer=tf.optimizers.Adam(learning_rate=0.001), metrics=['accuracy'])
-            _model.compile(loss='categorical_crossentropy', optimizer=tf.optimizers.Adam(learning_rate=0.001), metrics=['accuracy'])
+            
+            _model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), optimizer=tf.optimizers.Adam(learning_rate=0.001), metrics=['accuracy'])
+            # _model.compile(
+            #     loss=tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=yhat, labels=Y)),
+            #     optimizer=tf.keras.optimizers.SGD(learning_rate=0.01, nesterov=False, name='SGD'),
+            #     metrics=['accuracy'])
 
         _model.summary()
         
